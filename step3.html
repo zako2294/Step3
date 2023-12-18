@@ -114,85 +114,82 @@
         </div>
     </form>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var drivingData = {
-                weather: ["-- Choose --", "Sunny", "Cloudy", "Windy", "Rainy", "Foggy"],
-                timeOfDay: ["-- Choose --", "Morning", "Afternoon", "Evening"],
-                signalStatus: ["-- Choose --", "Green", "Yellow", "Red"],
-                scenicViews: ["-- Choose --", "Mountains", "Ocean", "Cityscape"]
-            };
+    document.addEventListener("DOMContentLoaded", function() {
+    var drivingData = {
+        weather: ["Sunny", "Cloudy", "Windy", "Rainy", "Foggy"],
+        timeOfDay: ["Morning", "Afternoon", "Evening"],
+        signalStatus: ["Green", "Yellow", "Red"],
+        scenicViews: ["Mountains", "Ocean", "Cityscape"]
+    };
 
-            function populateSelect(selectId, options) {
-                var select = document.getElementById(selectId);
-                options.forEach(function(option) {
-                    var optionElement = new Option(option, option);
-                    select.add(optionElement);
-                });
+    function populateSelect(selectId, options) {
+        var select = document.getElementById(selectId);
+        options.forEach(function(option) {
+            var optionElement = new Option(option, option);
+            select.add(optionElement);
+        });
+    }
+
+    populateSelect("weatherSelect", drivingData.weather);
+    populateSelect("timeOfDaySelect", drivingData.timeOfDay);
+    populateSelect("signalStatusSelect", drivingData.signalStatus);
+    populateSelect("scenicViewsSelect", drivingData.scenicViews);
+
+    var submitButton = document.getElementById("submitButton");
+
+    submitButton.addEventListener("click", function() {
+        console.log("Button Clicked");
+
+        var drivingExperience = {
+            date: document.getElementById("date").value,
+            startTime: document.getElementById("startTime").value,
+            endTime: document.getElementById("endTime").value,
+            mileage: parseFloat(document.getElementById("mileage").value),
+            weather: document.getElementById("weatherSelect").value,
+            timeOfDay: document.getElementById("timeOfDaySelect").value,
+            signalStatus: document.getElementById("signalStatusSelect").value,
+            scenicViews: document.getElementById("scenicViewsSelect").value
+        };
+
+        var existingExperiences = JSON.parse(localStorage.getItem("drivingExperiences")) || [];
+        drivingExperience.id = existingExperiences.length > 0 ? existingExperiences[existingExperiences.length - 1].id + 1 : 1;
+        existingExperiences.push(drivingExperience);
+        localStorage.setItem("drivingExperiences", JSON.stringify(existingExperiences));
+
+        updateTotalDistanceAndTimes(existingExperiences);
+
+        alert("Driving experience recorded successfully!");
+
+        document.getElementById("drivingForm").reset();
+    });
+
+    // Function to update the total distance traveled on the summary page
+    function updateTotalDistanceAndTimes(experiences) {
+        var totalDistance = 0;
+        var startingTime = null;
+        var endingTime = null;
+
+        experiences.forEach(function(experience) {
+            var mileage = parseFloat(experience.mileage);
+            if (!isNaN(mileage)) {
+                totalDistance += mileage;
             }
 
-            populateSelect("weatherSelect", drivingData.weather);
-            populateSelect("timeOfDaySelect", drivingData.timeOfDay);
-            populateSelect("signalStatusSelect", drivingData.signalStatus);
-            populateSelect("scenicViewsSelect", drivingData.scenicViews);
+            if (!startingTime || experience.startTime < startingTime) {
+                startingTime = experience.startTime;
+            }
 
-            var submitButton = document.getElementById("submitButton");
-
-            submitButton.addEventListener("click", function() {
-                console.log("Button Clicked"); // Add this line for debugging
-
-                var drivingExperience = {
-                    date: document.getElementById("date").value,
-                    startTime: document.getElementById("startTime").value,
-                    endTime: document.getElementById("endTime").value,
-                    mileage: parseFloat(document.getElementById("mileage").value), // Convert to float
-                    weather: document.getElementById("weatherSelect").value,
-                    timeOfDay: document.getElementById("timeOfDaySelect").value,
-                    signalStatus: document.getElementById("signalStatusSelect").value,
-                    scenicViews: document.getElementById("scenicViewsSelect").value
-                };
-
-                // Retrieve existing driving experiences from localStorage or initialize an empty array
-                var existingExperiences = JSON.parse(localStorage.getItem("drivingExperiences")) || [];
-
-                // Assign a new identifier (incremented by +1 relative to the last recorded experience)
-                drivingExperience.id = existingExperiences.length > 0 ? existingExperiences[existingExperiences.length - 1].id + 1 : 1;
-
-                // Add the new driving experience to the array
-                existingExperiences.push(drivingExperience);
-
-                // Save the updated array back to localStorage
-                localStorage.setItem("drivingExperiences", JSON.stringify(existingExperiences));
-
-                // Update total distance traveled on the form page
-                updateTotalDistance(existingExperiences);
-
-                // Optional: Display a confirmation message
-                alert("Driving experience recorded successfully!");
-
-                // Reset the form
-                document.getElementById("drivingForm").reset();
-            });
-
-          // Function to update the total distance traveled on the summary page
-function updateTotalDistance(experiences) {
-    var totalDistance = experiences.reduce(function (sum, experience) {
-        var mileage = parseFloat(experience.mileage);
-        if (!isNaN(mileage)) {
-            console.log("Adding mileage:", mileage);
-            return sum + mileage;
-        } else {
-            console.log("Invalid mileage value:", experience.mileage);
-            return sum;
-        }
-    }, 0);
-    console.log("Total distance before fixing:", totalDistance);
-    totalDistance = parseFloat(totalDistance); // Ensure totalDistance is a number
-    console.log("Total distance after fixing:", totalDistance);
-    document.getElementById("totalDistance").textContent = isNaN(totalDistance) ? "0.00" : totalDistance.toFixed(2);
-}
-
-
+            if (!endingTime || experience.endTime > endingTime) {
+                endingTime = experience.endTime;
+            }
         });
+
+        document.getElementById("totalDistance").textContent = isNaN(totalDistance) ? "0.00" : totalDistance.toFixed(2);
+        document.getElementById("startingTime").textContent = startingTime || "-";
+        document.getElementById("endingTime").textContent = endingTime || "-";
+    }
+});
+
     </script>
 
 </body>
