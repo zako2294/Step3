@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driving Experience Summary</title>
-    
-    <p><a href="step3.html">Home page</a></p>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,19 +15,38 @@
         }
 
         header {
-            background-color: #ffcc00; /* Yellow */
+            background-color: #ffcc00;
+            /* Yellow */
             color: #fff;
             text-align: center;
             padding: 1em 0;
         }
 
         #summaryContent {
-            max-width: 600px;
+            max-width: 800px;
+            /* Increased max-width for the table */
             margin: 20px auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
         }
 
         ul {
@@ -38,71 +57,166 @@
         li {
             margin-bottom: 8px;
         }
+
+        /* Additional styles for the new elements */
+        #totalDistanceLabel,
+        #startingTimeLabel,
+        #endingTimeLabel {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Additional styles for the new button */
+        #clearDataButton {
+            background-color: #cc0000;
+            /* Red */
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #clearDataButton:hover {
+            background-color: #990000;
+            /* Darker red on hover */
+        }
     </style>
 </head>
+
 <body>
     <header>
         <h1>Driving Experience Summary</h1>
     </header>
 
+    <p><a href="step3.html">Homepage</a></p>
+
     <div id="summaryContent">
-        <!-- Display various statistics about driving experiences -->
-        <p>Total Distance Traveled: <span id="totalDistance">0</span> km</p>
-        <p>Weather Statistics:</p>
-        <ul id="weatherStats"></ul>
-        <!-- Add more statistics for other variables if needed -->
+        <p id="totalDistanceLabel">Total Distance Traveled: <span id="totalDistance">0.00</span> km</p>
+        <p id="startingTimeLabel">Starting Time: <span id="startingTime">-</span></p>
+        <p id="endingTimeLabel">Ending Time: <span id="endingTime">-</span></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Starting Time</th>
+                    <th>Ending Time</th>
+                    <th>Total Distance Traveled</th>
+                    <th>Weather Statistics</th>
+                    <th>Action</th> <!-- New column for the delete button -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows for each driving experience -->
+            </tbody>
+        </table>
+
+        <!-- Button to clear data -->
+        <button id="clearDataButton">Clear Data</button>
     </div>
 
     <script>
-        // Retrieve driving experiences from localStorage
-        var drivingExperiences = JSON.parse(localStorage.getItem("drivingExperiences")) || [];
+        document.addEventListener("DOMContentLoaded", function () {
+            // Retrieve driving experiences from localStorage
+            var drivingExperiences = JSON.parse(localStorage.getItem("drivingExperiences")) || [];
 
-        // Update total distance on the summary page
-        updateTotalDistance(drivingExperiences);
+            // Display driving experiences in the table
+            displayDrivingExperiences(drivingExperiences);
 
-        // Display weather statistics on the summary page
-        displayWeatherStatistics(drivingExperiences);
+            // Display total distance and times on the summary page
+            updateTotalDistanceAndTimes(drivingExperiences);
 
-  // Function to update the total distance traveled on the summary page
-function updateTotalDistance(experiences) {
-    var totalDistance = experiences.reduce(function (sum, experience) {
-        var mileage = parseFloat(experience.mileage);
-        if (!isNaN(mileage)) {
-            console.log("Adding mileage:", mileage);
-            return sum + mileage;
-        } else {
-            console.log("Invalid mileage value:", experience.mileage);
-            return sum;
-        }
-    }, 0);
-    console.log("Total distance before fixing:", totalDistance);
-    totalDistance = parseFloat(totalDistance); // Ensure totalDistance is a number
-    console.log("Total distance after fixing:", totalDistance);
-    document.getElementById("totalDistance").textContent = isNaN(totalDistance) ? "0.00" : totalDistance.toFixed(2);
-}
+            // Function to display driving experiences in the table
+            function displayDrivingExperiences(experiences) {
+                var tbody = document.querySelector("tbody");
 
+                // Clear existing rows
+                tbody.innerHTML = "";
 
+                experiences.forEach(function (experience, index) {
+                    var row = tbody.insertRow();
+                    row.insertCell(0).textContent = experience.date;
+                    row.insertCell(1).textContent = experience.startTime;
+                    row.insertCell(2).textContent = experience.endTime;
+                    row.insertCell(3).textContent = experience.mileage;
+                    row.insertCell(4).textContent = experience.weather;
 
-        // Function to display weather statistics on the summary page
-        function displayWeatherStatistics(experiences) {
-            var weatherStats = {};
-
-            experiences.forEach(function(experience) {
-                var weather = experience.weather;
-                if (weather in weatherStats) {
-                    weatherStats[weather]++;
-                } else {
-                    weatherStats[weather] = 1;
-                }
-            });
-
-            var weatherStatsList = document.getElementById("weatherStats");
-            for (var weather in weatherStats) {
-                var listItem = document.createElement("li");
-                listItem.textContent = weather + ": " + weatherStats[weather] + " experiences";
-                weatherStatsList.appendChild(listItem);
+                    // Add delete button in a new cell
+                    var deleteCell = row.insertCell(5);
+                    var deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.addEventListener("click", function () {
+                        // Call the delete function when the button is clicked
+                        deleteExperience(index);
+                    });
+                    deleteCell.appendChild(deleteButton);
+                });
             }
-        }
+
+            // Function to update the total distance and times on the summary page
+            function updateTotalDistanceAndTimes(experiences) {
+                var totalDistance = 0;
+                var startingTime = null;
+                var endingTime = null;
+
+                experiences.forEach(function (experience) {
+                    var mileage = parseFloat(experience.mileage);
+                    if (!isNaN(mileage)) {
+                        totalDistance += mileage;
+                    }
+
+                    // Update starting and ending times
+                    if (!startingTime || experience.startTime < startingTime) {
+                        startingTime = experience.startTime;
+                    }
+
+                    if (!endingTime || experience.endTime > endingTime) {
+                        endingTime = experience.endTime;
+                    }
+                });
+
+                // Update total distance
+                document.getElementById("totalDistance").textContent = isNaN(totalDistance) ? "0.00" : totalDistance.toFixed(2);
+
+                // Update starting and ending times
+                document.getElementById("startingTime").textContent = startingTime || "-";
+                document.getElementById("endingTime").textContent = endingTime || "-";
+            }
+
+            // Function to delete a driving experience
+            function deleteExperience(index) {
+                // Remove the experience at the specified index
+                drivingExperiences.splice(index, 1);
+
+                // Update localStorage with the modified array
+                localStorage.setItem("drivingExperiences", JSON.stringify(drivingExperiences));
+
+                // Refresh the displayed experiences
+                displayDrivingExperiences(drivingExperiences);
+
+                // Update total distance and times
+                updateTotalDistanceAndTimes(drivingExperiences);
+            }
+
+            // Button to clear all data
+            var clearDataButton = document.getElementById("clearDataButton");
+            clearDataButton.addEventListener("click", function () {
+                // Clear data from localStorage
+                localStorage.removeItem("drivingExperiences");
+
+                // Clear displayed data
+                var tbody = document.querySelector("tbody");
+                tbody.innerHTML = "";
+
+                // Reset total distance and times
+                document.getElementById("totalDistance").textContent = "0.00";
+                document.getElementById("startingTime").textContent = "-";
+                document.getElementById("endingTime").textContent = "-";
+            });
+        });
     </script>
 </body>
+
 </html>
