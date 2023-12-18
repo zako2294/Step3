@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driving Experience Summary</title>
+    
+    <p><a href="step3.html">Home page</a></p>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #ffcc00; /* Yellow */
+            color: #fff;
+            text-align: center;
+            padding: 1em 0;
+        }
+
+        #summaryContent {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Driving Experience Summary</h1>
+    </header>
+
+    <div id="summaryContent">
+        <!-- Display various statistics about driving experiences -->
+        <p>Total Distance Traveled: <span id="totalDistance">0</span> km</p>
+        <p>Weather Statistics:</p>
+        <ul id="weatherStats"></ul>
+        <!-- Add more statistics for other variables if needed -->
+    </div>
+
+    <script>
+        // Retrieve driving experiences from localStorage
+        var drivingExperiences = JSON.parse(localStorage.getItem("drivingExperiences")) || [];
+
+        // Update total distance on the summary page
+        updateTotalDistance(drivingExperiences);
+
+        // Display weather statistics on the summary page
+        displayWeatherStatistics(drivingExperiences);
+
+  // Function to update the total distance traveled on the summary page
+function updateTotalDistance(experiences) {
+    var totalDistance = experiences.reduce(function (sum, experience) {
+        var mileage = parseFloat(experience.mileage);
+        if (!isNaN(mileage)) {
+            console.log("Adding mileage:", mileage);
+            return sum + mileage;
+        } else {
+            console.log("Invalid mileage value:", experience.mileage);
+            return sum;
+        }
+    }, 0);
+    console.log("Total distance before fixing:", totalDistance);
+    totalDistance = parseFloat(totalDistance); // Ensure totalDistance is a number
+    console.log("Total distance after fixing:", totalDistance);
+    document.getElementById("totalDistance").textContent = isNaN(totalDistance) ? "0.00" : totalDistance.toFixed(2);
+}
+
+
+
+        // Function to display weather statistics on the summary page
+        function displayWeatherStatistics(experiences) {
+            var weatherStats = {};
+
+            experiences.forEach(function(experience) {
+                var weather = experience.weather;
+                if (weather in weatherStats) {
+                    weatherStats[weather]++;
+                } else {
+                    weatherStats[weather] = 1;
+                }
+            });
+
+            var weatherStatsList = document.getElementById("weatherStats");
+            for (var weather in weatherStats) {
+                var listItem = document.createElement("li");
+                listItem.textContent = weather + ": " + weatherStats[weather] + " experiences";
+                weatherStatsList.appendChild(listItem);
+            }
+        }
+    </script>
+</body>
+</html>
